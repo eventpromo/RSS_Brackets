@@ -33,14 +33,16 @@ function isClosed(bracket, config){
 }
 
 module.exports = function check(str, bracketsConfig) {
+  str = str.split('');
   let configs = configToObjects(bracketsConfig);      
   let length = str.length;  
   let symbol = '*';
-  while(length-- >= 0 && str.length > 0){
-    let temp = "";
-    let needUpdate = false;
+  while(length-- >= 0){
     for(let i = 0; i < str.length - 1; i++){
       let bracket = str[i];
+      if(bracket === symbol){
+        continue;
+      }
       let config = getConfig(configs, bracket);
       if(config === undefined){
         return false;
@@ -48,30 +50,22 @@ module.exports = function check(str, bracketsConfig) {
       if(config.open === bracket){
         for(let j = i + 1; j < str.length; j++){
           let nextBracket = str[j];
+          if(nextBracket === symbol){
+            continue;
+          }
           if(config.close === nextBracket){
-            if((j - i) % 2 !== 0){
-              needUpdate = true;
+            if((j - i) % 2 !== 0){              
               for(let k = 0; k < str.length; k++){
-                if(k !== i && k !== j){
-                  temp += str[k];                  
-                }else{
-                  temp
-                }                
-              }  
-              if(needUpdate){
-                break;
-              }            
+                if(k === i || k === j){
+                  str[k] = symbol;
+                }
+              } 
+              break;                         
             }
           }
         }
-      }
-      if(needUpdate){
-        break;
-      }
-    }
-    if(needUpdate){
-      str = temp;    
+      }      
     }    
   }
-  return str.length === 0;  
+  return str.filter(x => x !== symbol).length === 0 
 }
