@@ -18,13 +18,6 @@ function getConfig(configs, bracket){
   return undefined;
 }
 
-function getMap(configs, type){
-  var map = new Map();
-  configs.forEach(config => {
-    map.set(config[type], 0);
-  });
-}
-
 function isOpen(bracket, config){
   if(config.open === bracket){
     return true;
@@ -39,37 +32,46 @@ function isClosed(bracket, config){
   return false;
 }
 
-function checkBrackets(opened, closed, configs){
-  if(closed.length != opened.length){
-    return false;
-  } 
-  for(let i = 0, j = opened.length - 1; i < opened.length; i++, j--){
-    let open = opened[i];
-    let close = closed[j];
-    let config = getConfig(configs, open);
-    if(config.open === open && config.close !== close){
-      return false;
-    }
-  }
-  return true;
-}
-
 module.exports = function check(str, bracketsConfig) {
   let configs = configToObjects(bracketsConfig);      
-  var closed = [];
-  var opened = [];
-  for(let i = 0; i < str.length; i++){
-    let bracket = str[i];
-    let config = getConfig(configs, bracket);    
-    if(config === undefined){
-      return false;
+  let length = str.length;  
+  let symbol = '*';
+  while(length-- >= 0 && str.length > 0){
+    let temp = "";
+    let needUpdate = false;
+    for(let i = 0; i < str.length - 1; i++){
+      let bracket = str[i];
+      let config = getConfig(configs, bracket);
+      if(config === undefined){
+        return false;
+      }
+      if(config.open === bracket){
+        for(let j = i + 1; j < str.length; j++){
+          let nextBracket = str[j];
+          if(config.close === nextBracket){
+            if((j - i) % 2 !== 0){
+              needUpdate = true;
+              for(let k = 0; k < str.length; k++){
+                if(k !== i && k !== j){
+                  temp += str[k];                  
+                }else{
+                  temp
+                }                
+              }  
+              if(needUpdate){
+                break;
+              }            
+            }
+          }
+        }
+      }
+      if(needUpdate){
+        break;
+      }
     }
-    if(isOpen(bracket, config)){
-      opened.push(bracket);
-    }
-    if(isClosed(bracket, config)){
-      closed.push(bracket);
+    if(needUpdate){
+      str = temp;    
     }    
-  }      
-  return checkBrackets(opened, closed, configs);  
+  }
+  return str.length === 0;  
 }
